@@ -124,11 +124,6 @@ class BlitzPlugin implements Plugin<Project> {
 
             main.java.srcDirs "${project.blitz.outputDir}/java"
             main.resources.srcDirs "${project.blitz.outputDir}/resources"
-
-            // Configure compileJava task to depend on our tasks
-            project.tasks.named("compileJava").configure { task ->
-                task.dependsOn project.tasks.withType(DslBaseTask)
-            }
         }
     }
 
@@ -147,7 +142,14 @@ class BlitzPlugin implements Plugin<Project> {
             // Set any DSL tasks to depend on import tasks
             project.tasks.withType(DslBaseTask).configureEach { DslBaseTask task ->
                 task.dependsOn importMappings, importDatabaseTypes
-            }
+            }        
+
+            // CompileJava depends on all dsl tasks to run first
+            project.plugins.withType(JavaPlugin) { JavaPlugin java ->
+                project.tasks.named("compileJava").configure { task ->
+                        task.dependsOn project.tasks.withType(DslBaseTask)
+                }
+            }        
         }
     }
 
